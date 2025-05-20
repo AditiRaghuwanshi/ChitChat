@@ -252,10 +252,6 @@ const AddMembers = TryCatch(async (req, res, next) => {
   
  });
 
-//  const leaveGroup = TryCatch(async(req,res,next) => {
-
-//  })
-
 const sendAttachment = TryCatch(async(req,res,next) => {
     const { chatId} = req.body;
     const files = req.files || [];
@@ -388,6 +384,7 @@ const renameeGroup = TryCatch(async (req, res, next) => {
 
 const deleteChat = TryCatch(async (req,res,next) => {
     const chatId = req.params.id;
+    console.log(chatId);
 
     const chat = await Chat.findById(chatId);
     
@@ -396,6 +393,8 @@ const deleteChat = TryCatch(async (req,res,next) => {
    const members = chat.members;
    if(chat.groupChat && chat.creator.toString() === req.user.toString())
     return next (new ErrorHandler("Group chat deleted successfully!", 403));
+  
+   console.log(members, "grp")
 
 //    if(!chat.groupChat && !chat.members.includes(req.user.toString())){
 //     return next(new ErrorHandler("Invalid Request , you are not the member of grp anymore:) sweetheart", 403))
@@ -422,6 +421,120 @@ const deleteChat = TryCatch(async (req,res,next) => {
         message: "chat deleted successfully",
     });
 });
+
+
+const leaveGroup = TryCatch(async (req, res, next) => {
+  const { id: chatId } = req.params;
+
+  const chat = await Chat.findById(chatId);
+  if (!chat) return next(new ErrorHandler("Group not found", 404));
+  if (!chat.groupChat) return next(new ErrorHandler("Not a group chat", 400));
+
+  const userId = req.user._id.toString();
+
+  // Remove the user from members
+  chat.members = chat.members.filter(
+    (member) => member.toString() !== userId
+  );
+
+  let newAdminAssigned = false;
+  let newAdminId = null;
+
+  // If user is admin and others are still present, reassign admin
+  if (chat.creator.toString() === userId && chat.members.length > 0) {
+    const newAdmin = chat.members[Math.floor(Math.random() * chat.members.length)];
+    chat.creator = newAdmin;
+    newAdminAssigned = true;
+    newAdminId = newAdmin;
+  }
+
+  // If no members left, delete the group
+  if (chat.members.length < 2) {
+    await chat.deleteOne();
+    return res.status(200).json({ success: true, message: "Left and group deleted" });
+  }
+
+  await chat.save();
+
+  emitEvent(req, "ALERT", chat.members, `${req.user.namee} left the group`);
+  emitEvent(req, "REFETCH_CHATS", chat.members);
+
+  // ✅ Notify new admin
+  if (newAdminAssigned && newAdminId) {
+    emitEvent(req, "ALERT", [newAdminId], "You are now the admin of the group");
+  }
+
+  return res.status(200).json({ success: true, message: "Left group" });
+});
+
+
+
+
+// const leaveGroup = TryCatch(async (req, res, next) => {
+//   const { id: chatId } = req.params;
+
+//   const chat = await Chat.findById(chatId);
+//   if (!chat) return next(new ErrorHandler("Group not found", 404));
+//   if (!chat.groupChat) return next(new ErrorHandler("Not a group chat", 400));
+
+//   const userId = req.user._id.toString();
+
+//   // Remove user from group
+//   chat.members = chat.members.filter(
+//     (member) => member.toString() !== userId
+//   );
+
+//   // Optional: Delete chat if no members left or only creator left
+//   if (chat.members.length < 1) {
+//     await chat.deleteOne();
+//     return res.status(200).json({ success: true, message: "Left and group deleted" });
+//   }
+
+//   await chat.save();
+
+//   emitEvent(req, "ALERT", chat.members, `${req.user.namee} left the group`);
+//   emitEvent(req, "REFETCH_CHATS", chat.members);
+
+//   return res.status(200).json({ success: true, message: "Left group" });
+// });
+
+
+
+
+// const leaveGroup = TryCatch(async (req, res, next) => {
+//   const { id: chatId } = req.params;
+
+//   const chat = await Chat.findById(chatId);
+//   if (!chat) return next(new ErrorHandler("Group not found", 404));
+//   if (!chat.groupChat) return next(new ErrorHandler("Not a group chat", 400));
+
+//   const userId = req.user._id.toString();
+
+//   // Remove the user from members
+//   chat.members = chat.members.filter(
+//     (member) => member.toString() !== userId
+//   );
+
+//   // If user is admin and others are still present, reassign admin
+//   if (chat.creator.toString() === userId && chat.members.length > 0) {
+//     const newAdmin = chat.members[Math.floor(Math.random() * chat.members.length)];
+//     chat.creator = newAdmin; // reassign new admin
+//   }
+
+//   // If no members left, delete the group
+//   if (chat.members.length < 2) {
+//     await chat.deleteOne();
+//     return res.status(200).json({ success: true, message: "Left and group deleted" });
+//   }
+
+//   await chat.save();
+
+//   emitEvent(req, "ALERT", chat.members, `${req.user.namee} left the group`);
+//   emitEvent(req, "REFETCH_CHATS", chat.members);
+
+//   return res.status(200).json({ success: true, message: "Left group" });
+// });
+
 
 
 
@@ -475,4 +588,4 @@ const getMessage = TryCatch(async(req,res,next) => {
  
 
 export {newGroupChat, MyChats, getMyGroups, AddMembers, removeMembers,  sendAttachment, getChatDetails, renameeGroup
-        ,deleteChat, getMessage}
+        ,deleteChat, getMessage, leaveGroup}

@@ -4,6 +4,6 @@ ADMIN_SECRET_KEY=sample admin key
 NODE_ENV = DEVELOPMENT
 CLIENT_URL = 
 
-CLOUDINARY_CLOUD_name= cloudinary name
+CLOUDINARY_CLOUD_NAME= cloudinary name
 CLOUDINARY_API_KEY= cloudinaryapikey
 CLOUDINARY_API_SECRET=cloudinaryapisecret

@@ -18,7 +18,9 @@
 
 export const corsOptions = {
   origin: [
-    "https://chit-chat-frontend-dtf5.vercel.app",
+    // "https://chit-chat-frontend-dtf5.vercel.app",
+  //  "https://chit-chat-frontend-dtf5.vercel.app/"
+   "https://chit-chat-frontend-sooty.vercel.app",
   ],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],

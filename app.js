@@ -212,18 +212,15 @@
 
 
 
-import express from "express";
-import { connectDB } from "./utils/features.js";
-import { errorMiddleware } from "./middlewares/error.js";
-import dotenv from "dotenv";
+import { v2 as cloudinary } from "cloudinary";
 import cookieParser from "cookie-parser";
-import adminRoute from "./routes/admin.js";
-import userRoute from "./routes/user.js";
-import chatRoute from "./routes/chat.js";
-import { createGroupChat, createSingleChat } from "./seeders/chat.js";
-import { Server } from "socket.io";
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
 import { createServer } from "http";
+import { Server } from "socket.io";
 import { v4 as uuid } from "uuid";
+import { corsOptions } from "./constants/config.js";
 import {
   CHAT_JOINED,
   CHAT_LEAVED,
@@ -234,11 +231,13 @@ import {
   STOP_TYPING,
 } from "./constants/events.js";
 import { getSockets } from "./lib/helper.js";
-import { Message } from "./models/message.js";
-import cors from "cors";
-import { v2 as cloudinary } from "cloudinary";
-import { corsOptions } from "./constants/config.js";
+import { errorMiddleware } from "./middlewares/error.js";
 import { socketAuthenticator } from "./middlewares/isAuth.js";
+import { Message } from "./models/message.js";
+import adminRoute from "./routes/admin.js";
+import chatRoute from "./routes/chat.js";
+import userRoute from "./routes/user.js";
+import { connectDB } from "./utils/features.js";
 
 dotenv.config({ path: "./.env" });
 
@@ -358,19 +357,19 @@ io.on("connection", (socket) => {
 app.use(errorMiddleware);
 
 // ✅ Server start
-// server.listen(port, () => {
-//   console.log(`Server running on port ${port} in ${envMode} mode`);
-// });
-
-
 server.listen(port, () => {
-  console.log(`Server running on port ${port} `);
+  console.log(`Server running on port ${port} in ${envMode} mode`);
 });
 
 
+// server.listen(port, () => {
+//   console.log(`Server running on port ${port} `);
+// });
 
 
-export { envMode, adminSecretKey, userSocketIDs };
+
+
+export { adminSecretKey, envMode, userSocketIDs };
 
 
 

@@ -253,6 +253,8 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 
 
+
+
 // ✅ Core middlewares
 app.use(express.json());
 app.use(cookieParser());
@@ -356,9 +358,17 @@ io.on("connection", (socket) => {
 app.use(errorMiddleware);
 
 // ✅ Server start
+// server.listen(port, () => {
+//   console.log(`Server running on port ${port} in ${envMode} mode`);
+// });
+
+
 server.listen(port, () => {
-  console.log(`Server running on port ${port} in ${envMode} mode`);
+  console.log(`Server running on port ${port} `);
 });
+
+
+
 
 export { envMode, adminSecretKey, userSocketIDs };
 

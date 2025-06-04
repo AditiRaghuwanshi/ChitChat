@@ -14,7 +14,7 @@ import { ErrorHandler } from "../utils/utility.js";
 const newUser = TryCatch(async (req,res,next) => {
   const {namee, username, password, bio} = req.body;
   const file = req.file
-  console.log(req.file);
+ 
 
   if(!file)
     return next(new ErrorHandler("Please upload avatar"));
@@ -46,8 +46,7 @@ const login = TryCatch(async(req, res, next) => {
 
     const {username, password} = req.body;
     const user = await User.findOne({username}).select("+password");
-    console.log(user);
-    if(!user) return next (new ErrorHandler("invalid username or password", 404));
+     if(!user) return next (new ErrorHandler("invalid username or password", 404));
   
     const isPasswordMatch = await compare(password, user.password);
     if(!isPasswordMatch) return next (new ErrorHandler("invalid username or password", 404));
@@ -148,13 +147,13 @@ const acceptFriendRequest = TryCatch(async(req,res,next)=> {
    if(!request) 
     return next (new ErrorHandler("request not found ", 404));
 
-   console.count("accept friend request");
+  
  
-if(request.receiver._id.toString() === req.user.toString()) {
-  return next(new ErrorHandler("You are not authorized to accept this request", 401));
+// if(request.receiver._id.toString() !== req.user.toString()) {
+//   return next(new ErrorHandler("You are not authorized to accept this request", 401));
 
-}
-console.count("accept friend request");
+// }
+
   
   if(!accept) {
     await request.deleteOne();
@@ -163,9 +162,8 @@ console.count("accept friend request");
       message: "Friend Request Rejected",
     });
   }
-  console.count("accept friend request");
   const members = [request.sender._id, request.receiver._id];
-  console.count("accept friend request");
+  
   await Promise.all([
     Chat.create({
       members,
@@ -175,11 +173,11 @@ console.count("accept friend request");
   User.findByIdAndUpdate(request.receiver._id, { $addToSet: { friends: request.sender._id } }),
     request.deleteOne(),
   ]);
-  console.count("accept friend request");
+ 
  
 
   emitEvent(req, REFETCH_CHATS, members);
-  console.count("accept friend request");
+
 
   return res.status(200).json({
     success:true,
@@ -310,7 +308,7 @@ const requests = await Request.find({receiver: req.user}).populate(
   "sender",
   "namee avatar"
 );
-console.log("(logged-in user):", req.user);
+
 
 
 const allRequests = requests
